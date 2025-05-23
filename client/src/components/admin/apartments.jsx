@@ -20,6 +20,7 @@ const Apartments = () => {
   const [noticeText, setNoticeText] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
+  const [tenants, setTenants] = useState([]);
 
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -39,10 +40,36 @@ const Apartments = () => {
     setNotices(res.data);
   };
 
+  const fetchTenants = async () => {
+    try {
+      const res = await axios.get(`${API}/api/auth/tenants`, config);
+      setTenants(res.data);
+    } catch (err) {
+      console.error("Failed to fetch tenants:", err);
+    }
+  };
+
+  const handleDeleteTenant = async (id) => {
+    if (confirm("Are you sure you want to delete this tenant?")) {
+      try {
+        await axios.delete(`${API}/api/auth/tenants/${id}`, config);
+        fetchTenants();
+      } catch (err) {
+        console.error("Failed to delete tenant:", err);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchApartments();
     fetchMaintenance();
     fetchNotices();
+    fetchTenants();
+    const fetchChats = async () => {
+      const res = await axios.get(`${API}/api/chat`);
+      setChatMessages(res.data);
+    };
+    fetchChats();
     socket.on("new_notice", (notice) =>
       setNotices((prev) => [notice, ...prev])
     );
@@ -137,157 +164,47 @@ const Apartments = () => {
     socket.emit("new_notice", res.data);
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
+    if (!chatInput.trim()) return;
+
     const msg = { sender: "Admin", text: chatInput };
-    socket.emit("new_chat", msg);
+    socket.emit("new_chat", msg); // emit real-time
+
     setChatMessages((prev) => [...prev, msg]);
     setChatInput("");
+
+    try {
+      await axios.post(`${API}/api/chat`, msg); // ✅ save to DB
+    } catch (err) {
+      console.error("Error saving message:", err.message);
+    }
   };
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Apartment Management</h1>
 
-      {/* Apartment Form */}
-      <form onSubmit={handleSubmit} className="mb-6 space-y-2">
-        <input
-          type="text"
-          placeholder="Apartment Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Address"
-          value={form.address}
-          onChange={(e) => setForm({ ...form, address: e.target.value })}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Units (e.g. A1, A2, B1)"
-          value={form.units}
-          onChange={(e) => setForm({ ...form, units: e.target.value })}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          {editing ? "Update Apartment" : "Add Apartment"}
-        </button>
-      </form>
-
-      {/* Apartment List */}
-      <div className="grid gap-4 mb-10">
-        {apartments.map((apt) => (
-          <div key={apt._id} className="p-4 border rounded bg-white shadow">
-            <h2 className="text-lg font-semibold">{apt.name}</h2>
-            <p className="text-gray-600 mb-2">{apt.address}</p>
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              {apt.units.map((unit) => (
-                <div
-                  key={unit._id}
-                  className="p-2 border rounded bg-gray-100 flex justify-between items-center"
-                >
-                  <div>
-                    <span className="font-medium">{unit.unitNumber}</span>
-                    <span className="ml-2 text-sm text-gray-600">
-                      {unit.tenant ? `Tenant: ${unit.tenant.email}` : "Vacant"}
-                    </span>
-                  </div>
-                  <div className="text-sm">
-                    {unit.tenant && (
-                      <>
-                        <div>Rent: ${unit.tenant.rent}</div>
-                        <div>
-                          Status: {unit.tenant.isPaid ? "Paid" : "Unpaid"}
-                        </div>
-                        {!unit.tenant.isPaid && (
-                          <button
-                            onClick={() => handleMarkPaid(unit.tenant._id)}
-                            className="text-green-600 underline ml-2"
-                          >
-                            Mark Paid
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
+      <div className="mb-10">
+        <h2 className="text-xl font-bold mb-2">All Tenants</h2>
+        <ul className="space-y-2">
+          {tenants.map((tenant) => (
+            <li
+              key={tenant._id}
+              className="flex justify-between items-center border p-3 rounded bg-white"
+            >
+              <div>
+                <div>Email: {tenant.email}</div>
+                <div>House No: {tenant.houseNumber}</div>
+              </div>
               <button
-                onClick={() => handleEdit(apt)}
-                className="bg-yellow-500 text-white px-3 py-1 rounded"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(apt._id)}
+                onClick={() => handleDeleteTenant(tenant._id)}
                 className="bg-red-600 text-white px-3 py-1 rounded"
               >
                 Delete
               </button>
-            </div>
-
-            {/* Tenant Assignment */}
-            <div className="mt-4 border-t pt-2">
-              <h3 className="font-semibold mb-1">Assign Tenant</h3>
-              <div className="flex flex-wrap gap-2">
-                <select
-                  onChange={(e) =>
-                    setSelectedUnit({
-                      apartmentId: apt._id,
-                      unitId: e.target.value,
-                    })
-                  }
-                  value={
-                    selectedUnit.apartmentId === apt._id
-                      ? selectedUnit.unitId
-                      : ""
-                  }
-                  className="p-2 border rounded"
-                >
-                  <option value="">Select Unit</option>
-                  {apt.units
-                    .filter((u) => !u.tenant)
-                    .map((u) => (
-                      <option key={u._id} value={u._id}>
-                        {u.unitNumber}
-                      </option>
-                    ))}
-                </select>
-                <input
-                  type="email"
-                  placeholder="Tenant Email"
-                  value={tenantEmail}
-                  onChange={(e) => setTenantEmail(e.target.value)}
-                  className="p-2 border rounded"
-                />
-                <input
-                  type="number"
-                  placeholder="Rent Amount"
-                  value={rentAmount}
-                  onChange={(e) => setRentAmount(e.target.value)}
-                  className="p-2 border rounded"
-                />
-                <button
-                  onClick={handleAssignTenant}
-                  className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Assign
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Maintenance Requests */}

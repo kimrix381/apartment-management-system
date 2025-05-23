@@ -18,7 +18,11 @@ const Login = ({ setRole }) => {
         email,
         password,
       });
+
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("houseNumber", res.data.user.houseNumber);
+      console.log(res.data.user.houseNumber);
+
       const decoded = JSON.parse(atob(res.data.token.split(".")[1]));
       setRole(decoded.role);
       navigate(decoded.role === "admin" ? "/admin" : "/tenant");

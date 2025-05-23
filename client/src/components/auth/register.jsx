@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import HouseSelect from "../houseselect.jsx";
 
 const Register = ({ setRole }) => {
   const [form, setForm] = useState({
@@ -8,6 +9,7 @@ const Register = ({ setRole }) => {
     email: "",
     password: "",
     role: "tenant",
+    houseNumber: "",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -72,9 +74,20 @@ const Register = ({ setRole }) => {
           className="w-full p-2 border rounded mb-4"
         >
           <option value="tenant">Tenant</option>
-          <option value="admin">Admin</option>
-          <option value="staff">Staff</option>
         </select>
+        <HouseSelect
+          selectedHouse={form.houseNumber}
+          onChange={(e) => setForm({ ...form, houseNumber: e.target.value })}
+        />
+
+        {/* <select
+          name="House number"
+          value={form.role}
+          onChange={handleChange}
+          className="w-full p-2 border rounded mb-4"
+        >
+          <option value="tenant">NO 1</option>
+        </select> */}
         <button
           type="submit"
           className="w-full bg-green-600 text-white py-2 rounded"

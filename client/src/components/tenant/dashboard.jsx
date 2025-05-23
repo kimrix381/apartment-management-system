@@ -5,6 +5,7 @@ import io from "socket.io-client";
 // Use VITE_SERVER_URL for socket, and VITE_API_URL for REST API
 const socket = io(import.meta.env.VITE_SERVER_URL);
 const API = import.meta.env.VITE_SERVER_URL;
+const houseNumber = localStorage.getItem("houseNumber");
 
 const TenantDashboard = () => {
   const [notices, setNotices] = useState([]);
@@ -43,6 +44,11 @@ const TenantDashboard = () => {
   useEffect(() => {
     fetchData();
     fetchNotices();
+    const fetchChats = async () => {
+      const res = await axios.get(`${API}/api/chat`);
+      setChatMessages(res.data);
+    };
+    fetchChats();
 
     socket.on("new_notice", (notice) =>
       setNotices((prev) => [notice, ...prev])
@@ -55,12 +61,30 @@ const TenantDashboard = () => {
     };
   }, []);
 
-  const sendMessage = () => {
-    if (!chatInput.trim()) return; // prevent sending empty messages
-    const msg = { sender: "Tenant", text: chatInput };
-    socket.emit("new_chat", msg);
+  // const sendMessage = () => {
+  //   if (!chatInput.trim()) return;
+  //   const houseNumber = localStorage.getItem("houseNumber") || "Unknown";
+
+  //   const msg = { sender: houseNumber, text: chatInput };
+  //   socket.emit("new_chat", msg);
+  //   setChatMessages((prev) => [...prev, msg]);
+  //   setChatInput("");
+  // };
+  const sendMessage = async () => {
+    if (!chatInput.trim()) return;
+    const houseNumber = localStorage.getItem("houseNumber") || "Unknown";
+
+    const msg = { sender: houseNumber, text: chatInput };
+    socket.emit("new_chat", msg); // emit real-time
+
     setChatMessages((prev) => [...prev, msg]);
     setChatInput("");
+
+    try {
+      await axios.post(`${API}/api/chat`, msg); // ✅ save to DB
+    } catch (err) {
+      console.error("Error saving message:", err.message);
+    }
   };
 
   const fileComplaint = async () => {

@@ -1,11 +1,12 @@
+// models/chat.js
 import mongoose from "mongoose";
 
-const chatSchema = new mongoose.Schema({
-  sender: { type: String },
-  text: { type: String },
-  timestamp: { type: Date, default: Date.now },
-});
+const chatSchema = new mongoose.Schema(
+  {
+    sender: String, // house number
+    text: String,
+  },
+  { timestamps: true }
+);
 
-const ChatMessage = mongoose.model("ChatMessage", chatSchema);
-
-export default ChatMessage;
+export default mongoose.model("Chat", chatSchema);

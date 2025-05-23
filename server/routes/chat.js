@@ -1,30 +1,27 @@
+// routes/chat.js
 import express from "express";
-import ChatMessage from "../models/chatmessage.js"; // Ensure the .js extension
+import Chat from "../models/chatmessage.js";
 
 const router = express.Router();
 
-// GET chat history
+// Get all chat messages
 router.get("/", async (req, res) => {
   try {
-    const messages = await ChatMessage.find().sort({ timestamp: 1 });
+    const messages = await Chat.find().sort({ createdAt: 1 }); // oldest first
     res.json(messages);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch messages", error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// POST new message
+// Save a new message
 router.post("/", async (req, res) => {
   try {
     const { sender, text } = req.body;
-    const message = await ChatMessage.create({ sender, text });
-    res.status(201).json(message);
+    const chat = await Chat.create({ sender, text });
+    res.status(201).json(chat);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to send message", error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
