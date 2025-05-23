@@ -12,7 +12,7 @@ const TenantDashboard = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [rentStatus, setRentStatus] = useState(null);
-  const [maintenance, setMaintenance] = useState([]);
+  const [maintenanceRequests, setMaintenance] = useState([]);
   const [complaint, setComplaint] = useState("");
 
   const token = localStorage.getItem("token");
@@ -50,6 +50,23 @@ const TenantDashboard = () => {
     };
     fetchChats();
 
+    const fetchMaintenance = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${API}/api/maintenance`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setMaintenance(res.data); // <- set state with tenant's complaints
+      } catch (err) {
+        console.error("Error fetching maintenance:", err);
+      }
+    };
+
+    fetchMaintenance();
+
     socket.on("new_notice", (notice) =>
       setNotices((prev) => [notice, ...prev])
     );
@@ -61,15 +78,6 @@ const TenantDashboard = () => {
     };
   }, []);
 
-  // const sendMessage = () => {
-  //   if (!chatInput.trim()) return;
-  //   const houseNumber = localStorage.getItem("houseNumber") || "Unknown";
-
-  //   const msg = { sender: houseNumber, text: chatInput };
-  //   socket.emit("new_chat", msg);
-  //   setChatMessages((prev) => [...prev, msg]);
-  //   setChatInput("");
-  // };
   const sendMessage = async () => {
     if (!chatInput.trim()) return;
     const houseNumber = localStorage.getItem("houseNumber") || "Unknown";
@@ -77,7 +85,6 @@ const TenantDashboard = () => {
     const msg = { sender: houseNumber, text: chatInput };
     socket.emit("new_chat", msg); // emit real-time
 
-    setChatMessages((prev) => [...prev, msg]);
     setChatInput("");
 
     try {
@@ -142,10 +149,10 @@ const TenantDashboard = () => {
       <div className="mb-6">
         <h2 className="text-xl font-semibold">Maintenance Requests</h2>
         <ul className="space-y-2">
-          {maintenance.length ? (
-            maintenance.map((m) => (
-              <li key={m._id} className="border p-2 rounded">
-                {m.issue} - {m.status}
+          {maintenanceRequests.length ? (
+            maintenanceRequests.map((req) => (
+              <li key={req._id} className="border p-2 rounded">
+                {req.description} - {req.status}
               </li>
             ))
           ) : (

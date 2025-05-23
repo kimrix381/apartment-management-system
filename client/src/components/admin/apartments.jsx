@@ -146,10 +146,27 @@ const Apartments = () => {
 
   const updateMaintenanceStatus = async (id, status) => {
     try {
-      await axios.put(`${API}/api/maintenance/${id}`, { status }, config);
-      fetchMaintenance();
-    } catch (err) {
-      console.error(err);
+      const token = localStorage.getItem("token");
+
+      if (status === "Resolved") {
+        await axios.delete(`${API}/api/maintenance/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setMaintenanceRequests((prev) => prev.filter((req) => req._id !== id));
+      } else {
+        await axios.put(
+          `${API}/api/maintenance/${id}`,
+          { status },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setMaintenanceRequests((prev) =>
+          prev.map((req) => (req._id === id ? { ...req, status } : req))
+        );
+      }
+    } catch (error) {
+      console.error("Error updating/deleting maintenance request:", error);
     }
   };
 
@@ -170,7 +187,6 @@ const Apartments = () => {
     const msg = { sender: "Admin", text: chatInput };
     socket.emit("new_chat", msg); // emit real-time
 
-    setChatMessages((prev) => [...prev, msg]);
     setChatInput("");
 
     try {
