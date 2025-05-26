@@ -11,11 +11,21 @@ import Apartments from "./components/admin/apartments.jsx";
 import TenantDashboard from "./components/tenant/dashboard.jsx";
 import Login from "./components/auth/login.jsx";
 import Register from "./components/auth/register.jsx";
+import bg from "./assets/bg.jpg";
+
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
 const AppLayout = ({ role, setRole }) => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwtDecode(token);
+      setUser(decoded); // { id, name, email, role } — depends on your backend token
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -23,16 +33,29 @@ const AppLayout = ({ role, setRole }) => {
     navigate("/login");
   };
   return (
-    <div className="p-4 text-center text-gray-800">
-      <header className="flex justify-between items-center mb-4">
+    <div className="p-4 text-center text-white">
+      <header
+        className="flex justify-between items-center mb-4  bg-center text-sky-200 rounded-2xl"
+        style={{ backgroundImage: `url(${bg})` }}
+      >
         <h1 className="text-xl font-bold">Apartment Management</h1>
-        {role && (
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Logout
-          </button>
+        <h1 className="text-xl font-bold">Tenant Dashboard</h1>
+
+        {user && (
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-right">
+              <div className="font-semibold">{user.name}</div>
+              <div className="text-sky-200">{user.email}</div>
+              <div className="text-sky-200">{user.role}</div>
+              <div className="text-sky-200">{user.houseNumber}</div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-4 py-2 rounded mr-10"
+            >
+              Logout
+            </button>
+          </div>
         )}
       </header>
       <Routes>

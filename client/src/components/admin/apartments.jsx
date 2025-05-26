@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import io from "socket.io-client";
+import AssignRent from "../assignrent.jsx";
 
 const API = import.meta.env.VITE_SERVER_URL;
 const socket = io(import.meta.env.VITE_SERVER_URL);
@@ -166,6 +167,7 @@ const Apartments = () => {
         );
       }
     } catch (error) {
+      alert(error.response?.data?.error || "An error occurred");
       console.error("Error updating/deleting maintenance request:", error);
     }
   };
@@ -206,7 +208,7 @@ const Apartments = () => {
           {tenants.map((tenant) => (
             <li
               key={tenant._id}
-              className="flex justify-between items-center border p-3 rounded bg-white"
+              className="flex justify-between items-center border p-3 rounded bg-black"
             >
               <div>
                 <div>Email: {tenant.email}</div>
@@ -223,6 +225,8 @@ const Apartments = () => {
         </ul>
       </div>
 
+      <AssignRent />
+
       {/* Maintenance Requests */}
       <div className="mb-10">
         <h2 className="text-xl font-bold mb-2">Maintenance Requests</h2>
@@ -230,18 +234,16 @@ const Apartments = () => {
           {maintenanceRequests.map((req) => (
             <li
               key={req._id}
-              className="p-3 border rounded bg-gray-100 flex justify-between items-center"
+              className="p-3 border rounded bg-black flex justify-between items-center"
             >
               <div>
-                <div className="font-semibold text-gray-800">
+                <div className="font-semibold text-white">
                   Problem: {req.description}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-white">
                   Tenant Email: {req.tenant?.email || "Unknown"}
                 </div>
-                <div className="text-sm text-gray-600">
-                  Status: {req.status}
-                </div>
+                <div className="text-sm text-white">Status: {req.status}</div>
               </div>
 
               <select
@@ -249,10 +251,9 @@ const Apartments = () => {
                 onChange={(e) =>
                   updateMaintenanceStatus(req._id, e.target.value)
                 }
-                className="p-1 border rounded"
+                className="p-1 border rounded bg-black"
               >
                 <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
                 <option value="Resolved">Resolved</option>
               </select>
             </li>
@@ -279,7 +280,10 @@ const Apartments = () => {
         </div>
         <ul className="space-y-2">
           {notices.map((n) => (
-            <li key={n._id} className="border p-3 rounded bg-yellow-100">
+            <li
+              key={n._id}
+              className="border p-3 rounded text-black text-2xl bg-yellow-100"
+            >
               {n.message}
             </li>
           ))}
@@ -297,7 +301,7 @@ const Apartments = () => {
                 msg.sender === "Admin" ? "text-right" : "text-left"
               }`}
             >
-              <span className="inline-block px-2 py-1 rounded bg-blue-200">
+              <span className="inline-block px-2 py-1 rounded bg-linear-to-t from-sky-500 to-indigo-500 text-black">
                 {msg.sender}: {msg.text}
               </span>
             </div>

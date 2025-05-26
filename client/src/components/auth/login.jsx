@@ -33,10 +33,16 @@ const Login = ({ setRole }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{
+        backgroundImage:
+          "url('https://images.squarespace-cdn.com/content/v1/5e82939525f53d07de1d635c/1593551839409-L5BGNNCKCP178VX0N5SY/Mason%2526Wales-Nevis-Building-Queenstown-Residential-Contemporary-Hero.jpg')",
+      }}
+    >
       <form
         onSubmit={handleLogin}
-        className="bg-white p-6 rounded shadow-md w-80"
+        className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 shadow-md w-80 rounded-2xl"
       >
         <h2 className="text-xl font-bold mb-4">Login</h2>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
@@ -64,7 +70,7 @@ const Login = ({ setRole }) => {
         </button>
         <p className="mt-4">
           Don't have an account?{" "}
-          <Link to="/register" className="text-blue-600 underline">
+          <Link to="/register" className="text-green-300 underline">
             Register here
           </Link>
         </p>

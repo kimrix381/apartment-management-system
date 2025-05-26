@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.js";
 import maintenanceRoutes from "./routes/maintenances.js";
 import noticeRoutes from "./routes/notices.js";
 import chatRoutes from "./routes/chat.js";
+import rentRoutes from "./routes/rent.js";
 import axios from "axios";
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/notices", noticeRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/rent", rentRoutes);
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);

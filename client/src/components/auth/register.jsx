@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import HouseSelect from "../houseselect.jsx";
+import construction from "../../assets/construction.jpg";
 
 const Register = ({ setRole }) => {
   const [form, setForm] = useState({
@@ -33,7 +34,10 @@ const Register = ({ setRole }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: `url(${construction})` }}
+    >
       <form
         onSubmit={handleRegister}
         className="bg-white p-6 rounded shadow-md w-80"
@@ -74,20 +78,13 @@ const Register = ({ setRole }) => {
           className="w-full p-2 border rounded mb-4"
         >
           <option value="tenant">Tenant</option>
+          <option value="admin">Admin</option>
         </select>
         <HouseSelect
           selectedHouse={form.houseNumber}
           onChange={(e) => setForm({ ...form, houseNumber: e.target.value })}
         />
 
-        {/* <select
-          name="House number"
-          value={form.role}
-          onChange={handleChange}
-          className="w-full p-2 border rounded mb-4"
-        >
-          <option value="tenant">NO 1</option>
-        </select> */}
         <button
           type="submit"
           className="w-full bg-green-600 text-white py-2 rounded"

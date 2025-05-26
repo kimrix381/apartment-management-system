@@ -3,13 +3,14 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js"; // Use .js extension for local imports
 import authenticateToken from "../middleware/authmiddlware.js";
+import isAdmin from "../middleware/isadmin.js"; // Use .js extension for local imports
 
 const router = express.Router();
 
 // Register
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, role, houseNumber } = req.body;
+    const { name, email, password, role, houseNumber } = req.body;
 
     if (role === "tenant") {
       if (!houseNumber) {
@@ -28,6 +29,7 @@ router.post("/register", async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await User.create({
+      name,
       email,
       password: hashed,
       role,
@@ -36,7 +38,13 @@ router.post("/register", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      {
+        id: user._id,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        houseNumber: user.houseNumber,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -59,7 +67,13 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, role: user.role, houseNumber: user.houseNumber },
+      {
+        id: user._id,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        houseNumber: user.houseNumber,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -71,6 +85,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         role: user.role,
         houseNumber: user.houseNumber,
+        name: user.name,
       },
     });
   } catch (err) {
@@ -98,3 +113,32 @@ router.delete("/tenants/:id", authenticateToken, async (req, res) => {
 });
 
 export default router;
+
+router.post("/assign", authenticateToken, isAdmin, async (req, res) => {
+  const { houseNumber, amount } = req.body;
+  if (!houseNumber || !amount)
+    return res.status(400).json({ error: "All fields are required" });
+
+  try {
+    const tenant = await User.findOne({ houseNumber });
+    if (!tenant) return res.status(404).json({ error: "Tenant not found" });
+
+    tenant.rent = amount;
+    await tenant.save();
+    res.json({ message: "Rent assigned successfully" });
+  } catch (err) {
+    console.error("Error assigning rent:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// GET /api/users/tenants
+router.get("/tenants", authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const tenants = await User.find({ role: "tenant" }).select("houseNumber");
+    res.json(tenants);
+  } catch (err) {
+    console.error("Error fetching tenants:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
