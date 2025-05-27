@@ -137,14 +137,14 @@ const TenantDashboard = () => {
 
   return (
     <div
-      className="bg-cover bg-center"
+      className="bg-cover bg-center "
       style={{ backgroundImage: `url(${bg})` }}
     >
-      <div className="flex min-h-screen ">
+      <div className="flex  ">
         {/* <h1 className="text-2xl font-bold mb-4">Tenant Dashboard</h1> */}
 
         {/* Sidebar */}
-        <aside className="w-64 bg-linear-to-bl from-violet-500 to-fuchsia-500 text-black p-4 space-y-4 rounded-xl">
+        <aside className="w-64 bg-linear-to-bl from-violet-500 to-fuchsia-500 text-black p-4 space-y-4 rounded-xl flip-scale-2-ver-right h-[250px] ">
           <h2 className="text-2xl font-bold mb-4">Tenant Menu</h2>
           <nav className="space-y-2">
             <button
@@ -192,7 +192,7 @@ const TenantDashboard = () => {
         </aside>
 
         <main
-          className="flex-1 p-6 bg-gray-100 bg-cover bg-center"
+          className="flex-1 p-6 bg-gray-100 bg-cover bg-center h-screen rounded-xl flip-scale-2-ver-left"
           style={{
             backgroundImage:
               "url('https://images.unsplash.com/photo-1644088379091-d574269d422f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dGVjaG5vbG9neSUyMGJhY2tncm91bmR8ZW58MHx8MHx8fDA%3D')",

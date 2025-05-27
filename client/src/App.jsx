@@ -35,11 +35,15 @@ const AppLayout = ({ role, setRole }) => {
   return (
     <div className="p-4 text-center text-white">
       <header
-        className="flex justify-between items-center mb-4  bg-center text-sky-200 rounded-2xl"
+        className="flex justify-between items-center mb-4 p-2 bg-center text-sky-200 rounded-2xl slide-top"
         style={{ backgroundImage: `url(${bg})` }}
       >
-        <h1 className="text-xl font-bold">Apartment Management</h1>
-        <h1 className="text-xl font-bold">Tenant Dashboard</h1>
+        <h1 className="text-xl font-bold ml-5 underline decoration-sky-500">
+          Apartment Management
+        </h1>
+        <h1 className="text-xl font-bold underline decoration-pink-500">
+          {user.role} Dashboard
+        </h1>
 
         {user && (
           <div className="flex items-center gap-4">

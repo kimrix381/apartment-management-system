@@ -216,7 +216,7 @@ const Apartments = () => {
               </div>
               <button
                 onClick={() => handleDeleteTenant(tenant._id)}
-                className="bg-red-600 text-white px-3 py-1 rounded"
+                className="bg-red-600 shake-button text-white px-3 py-1 rounded"
               >
                 Delete
               </button>
