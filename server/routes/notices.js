@@ -35,4 +35,15 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
+router.delete("/:id", authenticateToken, async (req, res) => {
+  try {
+    const notice = await Notice.findByIdAndDelete(req.params.id);
+    if (!notice) {
+      return res.status(404).json({ error: "Notice not found" });
+    }
+    res.json({ message: "Notice deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Server error while deleting notice" });
+  }
+});
 export default router;

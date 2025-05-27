@@ -143,7 +143,7 @@
     rgb(0, 183, 255),
     rgb(255, 48, 255)
   );
-  height: 300px;
+  height: 400px;
   animation: rotate 4s linear infinite;
   transition: all 0.4s linear;
 }
@@ -380,5 +380,51 @@
   100% {
     -webkit-transform: translateY(-100px);
     transform: translateY(-100px);
+  }
+}
+
+.animated-border {
+  position: relative;
+  padding: 5px;
+  background-color: black;
+  border-radius: 1rem;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.animated-border::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    270deg,
+    red,
+    orange,
+    yellow,
+    green,
+    cyan,
+    blue,
+    violet,
+    red
+  );
+  background-size: 800% 800%;
+  border-radius: inherit;
+  z-index: -1;
+  animation: animateBorder 10s linear infinite;
+  filter: blur(8px);
+}
+
+@keyframes animateBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }

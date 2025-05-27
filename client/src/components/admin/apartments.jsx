@@ -81,87 +81,13 @@ const Apartments = () => {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const unitsArray = form.units
-      .split(",")
-      .map((u) => ({ unitNumber: u.trim() }));
-    if (editing) {
-      await axios.put(
-        `${API}/api/apartments/${editing}`,
-        { ...form, units: unitsArray },
-        config
-      );
-    } else {
-      await axios.post(
-        `${API}/api/apartments`,
-        { ...form, units: unitsArray },
-        config
-      );
-    }
-    setForm({ name: "", address: "", units: "" });
-    setEditing(null);
-    fetchApartments();
-  };
-
-  const handleEdit = (apt) => {
-    setForm({
-      name: apt.name,
-      address: apt.address,
-      units: apt.units.map((u) => u.unitNumber).join(", "),
-    });
-    setEditing(apt._id);
-  };
-
-  const handleDelete = async (id) => {
-    await axios.delete(`${API}/api/apartments/${id}`, config);
-    fetchApartments();
-  };
-
-  const handleAssignTenant = async () => {
-    try {
-      await axios.put(
-        `${API}/api/apartments/${selectedUnit.apartmentId}/assign`,
-        { unitId: selectedUnit.unitId, tenantEmail, rent: rentAmount },
-        config
-      );
-      setTenantEmail("");
-      setSelectedUnit({ apartmentId: "", unitId: "" });
-      setRentAmount("");
-      fetchApartments();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to assign tenant");
-    }
-  };
-
-  const handleMarkPaid = async (tenantId) => {
-    try {
-      await axios.put(`${API}/api/payments/${tenantId}/mark-paid`, {}, config);
-      fetchApartments();
-    } catch (err) {
-      console.error(err);
-      alert("Error marking rent paid");
-    }
-  };
-
   const updateMaintenanceStatus = async (id, status) => {
     try {
-      const token = localStorage.getItem("token");
-
       if (status === "Resolved") {
-        await axios.delete(`${API}/api/maintenance/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.delete(`${API}/api/maintenance/${id}`, config);
         setMaintenanceRequests((prev) => prev.filter((req) => req._id !== id));
       } else {
-        await axios.put(
-          `${API}/api/maintenance/${id}`,
-          { status },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        await axios.put(`${API}/api/maintenance/${id}`, { status }, config);
         setMaintenanceRequests((prev) =>
           prev.map((req) => (req._id === id ? { ...req, status } : req))
         );
@@ -183,16 +109,32 @@ const Apartments = () => {
     socket.emit("new_notice", res.data);
   };
 
+  const handleDeleteNotice = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API}/api/notices/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setNotices((prev) => prev.filter((n) => n._id !== id));
+    } catch (err) {
+      console.error(
+        "Failed to delete notice:",
+        err.response?.data || err.message
+      );
+    }
+  };
+
   const sendMessage = async () => {
     if (!chatInput.trim()) return;
 
     const msg = { sender: "Admin", text: chatInput };
-    socket.emit("new_chat", msg); // emit real-time
-
+    socket.emit("new_chat", msg);
     setChatInput("");
 
     try {
-      await axios.post(`${API}/api/chat`, msg); // ✅ save to DB
+      await axios.post(`${API}/api/chat`, msg);
     } catch (err) {
       console.error("Error saving message:", err.message);
     }
@@ -208,7 +150,7 @@ const Apartments = () => {
           {tenants.map((tenant) => (
             <li
               key={tenant._id}
-              className="flex justify-between items-center border p-3 rounded bg-black"
+              className="flex flex-col sm:flex-row justify-between gap-2 items-start sm:items-center border p-3 rounded bg-black text-white"
             >
               <div>
                 <div>Email: {tenant.email}</div>
@@ -227,31 +169,32 @@ const Apartments = () => {
 
       <AssignRent />
 
-      {/* Maintenance Requests */}
       <div className="mb-10">
         <h2 className="text-xl font-bold mb-2">Maintenance Requests</h2>
         <ul className="space-y-2">
           {maintenanceRequests.map((req) => (
             <li
               key={req._id}
-              className="p-3 border rounded bg-black flex justify-between items-center"
+              className="p-3 border rounded bg-black text-white flex flex-col animated-border md:flex-row justify-between gap-2 items-start md:items-center"
             >
               <div>
-                <div className="font-semibold text-white">
+                <div className="font-semibold text-black">
                   Problem: {req.description}
                 </div>
-                <div className="text-sm text-white">
+                <div className="text-sm text-black">
                   Tenant Email: {req.tenant?.email || "Unknown"}
                 </div>
-                <div className="text-sm text-white">Status: {req.status}</div>
+                <div className="text-sm text-black">Status: {req.status}</div>
+                <div className="text-sm text-black">
+                  House: {req.houseNumber}
+                </div>
               </div>
-
               <select
                 value={req.status}
                 onChange={(e) =>
                   updateMaintenanceStatus(req._id, e.target.value)
                 }
-                className="p-1 border rounded bg-black"
+                className="p-2 border rounded bg-white text-black"
               >
                 <option value="Pending">Pending</option>
                 <option value="Resolved">Resolved</option>
@@ -263,7 +206,7 @@ const Apartments = () => {
 
       <div className="mb-10">
         <h2 className="text-xl font-bold mb-2">Notice Board</h2>
-        <div className="flex gap-2 mb-2">
+        <div className="flex flex-col sm:flex-row gap-2 mb-2">
           <input
             type="text"
             placeholder="Enter notice"
@@ -278,19 +221,25 @@ const Apartments = () => {
             Post
           </button>
         </div>
+
         <ul className="space-y-2">
           {notices.map((n) => (
             <li
               key={n._id}
-              className="border p-3 rounded text-black text-2xl bg-yellow-100"
+              className="border p-3 rounded text-black text-lg bg-yellow-100 flex justify-between items-center"
             >
-              {n.message}
+              <span>{n.message}</span>
+              <button
+                onClick={() => handleDeleteNotice(n._id)}
+                className="bg-red-500 text-white px-2 py-1 rounded ml-4 text-sm"
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* Real-Time Chat */}
       <div className="mb-10">
         <h2 className="text-xl font-bold mb-2">Admin-Tenant Chat</h2>
         <div className="h-48 overflow-y-auto border rounded p-2 bg-gray-50">
@@ -301,13 +250,13 @@ const Apartments = () => {
                 msg.sender === "Admin" ? "text-right" : "text-left"
               }`}
             >
-              <span className="inline-block px-2 py-1 rounded bg-linear-to-t from-sky-500 to-indigo-500 text-black">
+              <span className="inline-block px-2 py-1 rounded bg-gradient-to-t from-sky-500 to-indigo-500 text-white max-w-full break-words">
                 {msg.sender}: {msg.text}
               </span>
             </div>
           ))}
         </div>
-        <div className="flex gap-2 mt-2">
+        <div className="flex flex-col sm:flex-row gap-2 mt-2">
           <input
             type="text"
             value={chatInput}

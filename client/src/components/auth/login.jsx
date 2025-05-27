@@ -1,8 +1,6 @@
-// ---------------- /client/src/components/Auth/Login.jsx ----------------
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "animate.css";
 
 const Login = ({ setRole }) => {
@@ -22,8 +20,6 @@ const Login = ({ setRole }) => {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("houseNumber", res.data.user.houseNumber);
-      console.log(res.data.user.houseNumber);
-
       const decoded = JSON.parse(atob(res.data.token.split(".")[1]));
       setRole(decoded.role);
       navigate(decoded.role === "admin" ? "/admin" : "/tenant");
@@ -35,59 +31,38 @@ const Login = ({ setRole }) => {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
+      className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center px-4"
       style={{
         backgroundImage:
           "url('https://images.squarespace-cdn.com/content/v1/5e82939525f53d07de1d635c/1593551839409-L5BGNNCKCP178VX0N5SY/Mason%2526Wales-Nevis-Building-Queenstown-Residential-Contemporary-Hero.jpg')",
       }}
     >
-      <h1 className="text-4xl fixed top-0 right-0 left-125 font-bold ">
-        {/* <a class="underline decoration-sky-500">Apartment </a>
-        <a class="underline decoration-pink-500">Management </a>
-        <a class="underline decoration-indigo-500">System</a> */}
-        <div class="bouncing-letters text-4xl fixed top-10 right-0 left-20 font-bold ">
-          <p class="text-sky-500">
-            <span>A</span>
-            <span>P</span>
-            <span>A</span>
-            <span>R</span>
-            <span>T</span>
-            <span>M</span>
-            <span>E</span>
-            <span>N</span>
-            <span>T</span>
+      <div className="text-center mb-10">
+        <div className="bouncing-letters text-2xl sm:text-3xl md:text-4xl font-bold space-y-1">
+          <p className="text-sky-500">
+            {"APARTMENT".split("").map((char, i) => (
+              <span key={i}>{char}</span>
+            ))}
           </p>
-          <a class="text-pink-500">
-            <span class="space"></span>
-            <span>M</span>
-            <span>A</span>
-            <span>N</span>
-            <span>A</span>
-            <span>G</span>
-            <span>E</span>
-            <span>M</span>
-            <span>E</span>
-            <span>N</span>
-            <span>T</span>
-          </a>
-          <span class="space"></span>
-          <a class="text-indigo-500">
-            <span>S</span>
-            <span>Y</span>
-            <span>S</span>
-            <span>T</span>
-            <span>E</span>
-            <span>M</span>
-          </a>
+          <p className="text-pink-500">
+            {"MANAGEMENT".split("").map((char, i) => (
+              <span key={i}>{char}</span>
+            ))}
+          </p>
+          <p className="text-indigo-500">
+            {"SYSTEM".split("").map((char, i) => (
+              <span key={i}>{char}</span>
+            ))}
+          </p>
         </div>
-      </h1>
+      </div>
 
       <form
         onSubmit={handleLogin}
-        className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 shadow-md w-80 rounded-2xl fixed scale-up-ver-center"
+        className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 shadow-md w-full max-w-sm rounded-2xl animate__animated animate__fadeInUp"
       >
-        <h2 className="text-xl font-bold mb-4 text-center">Login</h2>
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        <h2 className="text-xl font-bold mb-4 text-center text-white">Login</h2>
+        {error && <p className="text-red-200 text-sm mb-2">{error}</p>}
         <input
           type="email"
           placeholder="Email"
@@ -106,13 +81,13 @@ const Login = ({ setRole }) => {
         />
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded card "
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-all duration-200 card"
         >
-          <h2>login</h2>
+          <h2>Login</h2>
         </button>
-        <p className="mt-4">
+        <p className="mt-4 text-white text-sm">
           Don't have an account?{" "}
-          <Link to="/register" className="text-green-300 underline">
+          <Link to="/register" className="text-green-200 underline">
             Register here
           </Link>
         </p>
